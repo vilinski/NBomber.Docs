@@ -9,8 +9,8 @@ Very simple load testing framework for testing Pull/Push-based systems. **You ca
 - Push scenario (Pub/Sub)
 - Sequential flow
 - Test runner support: [XUnit; NUnit]
+- Cluster support (run scenario from several nodes in parallel)
 - Reporting: [Plain text; HTML]
-- Distibuted cluster (run scenario from several nodes in parallel)
 
 ### Supported technologies
 - Supported runtimes: .NET Framework (4.6+), .NET Core (2.0+), Mono, CoreRT
@@ -20,12 +20,12 @@ Very simple load testing framework for testing Pull/Push-based systems. **You ca
 ### Examples
 |Scenario|Language|Example|
 |--|--|--|
-| HTTP | C# | [Test HTTP (https://github.com) with 100 concurrent users](https://github.com/PragmaticFlow/NBomber/blob/master/examples/CSharp.Example.Http/Program.cs) |
-| MongoDb | C# | [Test MongoDb with 2 READ queries and 2000 docs](https://github.com/PragmaticFlow/NBomber/blob/master/examples/CSharp.Example.MongoDb/Program.cs) |
-| NUnit integration | C# | [Simple NUnit test](https://github.com/PragmaticFlow/NBomber/blob/master/examples/CSharp.Example.NUnit/Tests.cs) |
-| Simple Push | C# | [Test fake push server](https://github.com/PragmaticFlow/NBomber/blob/master/examples/CSharp.Example.SimplePush/Program.cs) |
-| HTTP | F# | [Test HTTP (https://github.com) with 100 concurrent users](https://github.com/PragmaticFlow/NBomber/blob/master/examples/FSharp.Example.Http/Program.fs) |
-| XUnit integration | F# | [Simple XUnit test](https://github.com/PragmaticFlow/NBomber/blob/master/examples/FSharp.Example.XUnit/Tests.fs) |
+| HTTP | C# | [Test HTTP (https://github.com)](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/CSharp/CSharp.Examples/Scenarios/Http.cs) |
+| MongoDb | C# | [Test MongoDb with 2 READ queries](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/CSharp/CSharp.Examples/Scenarios/MongoDb.cs)|
+| NUnit integration | C# | [Simple NUnit test](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/CSharp/CSharp.Examples.NUnit/Tests.cs) |
+| WebSockets | C# | [Test ping and pong on WebSockets](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/CSharp/CSharp.Examples/Scenarios/WebSockets.cs) |
+| HTTP | F# | [Test HTTP (https://github.com)](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples/Scenarios/Http.fs) |
+| XUnit integration | F# | [Simple XUnit test](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples.XUnit/Tests.fs) |
 
 ## Why another {x} framework for load testing?
 The main reasons are:
@@ -35,11 +35,23 @@ The main reasons are:
  ### What makes it very simple? 
 NBomber is not really a framework but rather a foundation of building blocks which you can use to describe your test scenario, run it and get reports.
 ```csharp
-var scenario = new ScenarioBuilder(scenarioName: "Test MongoDb")                
-                .AddTestFlow("READ Users", steps: new[] { mongoQuery }, concurrentCopies: 10)
-                .Build(duration: TimeSpan.FromSeconds(10));
+var httpPool = ConnectionPool.Create("http pool", () => new HttpClient());
 
-scenario.RunInConsole(scenario);
+var step1 = Step.CreatePull("GET html", httpPool, async context =>
+{
+    var request = CreateHttpRequest();
+    var response = await context.Connection.SendAsync(request);
+    return response.IsSuccessStatusCode
+        ? Response.Ok()
+        : Response.Fail(response.StatusCode.ToString());
+});
+
+var scenario = ScenarioBuilder.CreateScenario("test github", step1)
+                              .WithConcurrentCopies(10)
+                              .WithDuration(TimeSpan.FromSeconds(20));
+
+NBomberRunner.RegisterScenarios(scenario)
+             .RunInConsole();
 ```
 
 ### Contributing

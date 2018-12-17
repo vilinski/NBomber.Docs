@@ -21,26 +21,27 @@ namespace CSharp.Example.Http
                 return msg;
             }
 
-            var httpClient = new HttpClient();
+            var httpPool = ConnectionPool.Create("http pool", () => new HttpClient());
 
-            var step1 = Step.CreateRequest("GET html", async _ =>
+            var step1 = Step.CreatePull("GET html", httpPool, async context =>
             {
                 var request = CreateHttpRequest();
-                var response = await httpClient.SendAsync(request);
+                var response = await context.Connection.SendAsync(request);
                 return response.IsSuccessStatusCode
                     ? Response.Ok()
                     : Response.Fail(response.StatusCode.ToString());
             });
 
-            return new ScenarioBuilder(scenarioName: "Test HTTP https://github.com")
-                .AddTestFlow("GET flow", steps: new[] { step1 }, concurrentCopies: 100)
-                .Build(duration: TimeSpan.FromSeconds(10));
+            return ScenarioBuilder.CreateScenario("test github", step1);
+                                  .WithConcurrentCopies(50)
+                                  .WithDuration(TimeSpan.FromSeconds(10));
         }
 
         static void Main(string[] args)
         {            
             var scenario = BuildScenario();
-            scenario.RunInConsole();
+            NBomberRunner.RegisterScenarios(scenario)
+                         .RunInConsole();
         }
     }
 }

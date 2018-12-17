@@ -17,27 +17,24 @@ let buildScenario () =
         msg.Headers.TryAddWithoutValidation("Accept", "text/html") |> ignore        
         msg
     
-    let httpClient = new HttpClient()
+    let pool = ConnectionPool.create("httpPool", fun () -> new HttpClient())    
 
-    let step1 = Step.createRequest("GET html", fun _ -> task {        
-        let! response = createHttpRequest() |> httpClient.SendAsync
+    let step1 = Step.createPull("GET html", pool, fun context -> task {        
+        let! response = createHttpRequest() |> context.Connection.SendAsync
         return if response.IsSuccessStatusCode then Response.Ok()
                else Response.Fail(response.StatusCode.ToString()) 
     })
 
-    let testFlow = { FlowName = "GET flow"
-                     Steps = [step1]
-                     ConcurrentCopies = 100 }
-
-    Scenario.create("Test HTTP https://github.com")
-    |> Scenario.addTestFlow(flow)
+    Scenario.create("test github", [step1])
+    |> Scenario.withConcurrentCopies(50)
     |> Scenario.withDuration(TimeSpan.FromSeconds(10.0))
 
 [<EntryPoint>]
 let main argv =    
     
-    buildScenario() 
-    |> Scenario.runInConsole
+    buildScenario()
+    |> NBomberRunner.registerScenario
+    |> NBomberRunner.runInConsole
 
     0 // return an integer exit code
 ```
