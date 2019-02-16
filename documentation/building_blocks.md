@@ -1,6 +1,6 @@
 # Building blocks
 
-The whole API is mainly built around 3 building blocks: Step, Scenario, ConnectionPool. In this page, we will walk through them just to cover basics.
+The whole API is mainly built around 2 building blocks: Step and Scenario. In this page, we will walk through them just to cover basics.
 
 ```fsharp
 // represents single executable Step
@@ -20,14 +20,6 @@ type Scenario = {
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
     WarmUpDuration: TimeSpan // execution time of warm-up before start bombing 
     Duration: TimeSpan       // execution time of Scenario 
-}
-
-// represents pool of connections (Http/WebSockets/SQL)
-type ConnectionPool<'TConnection> = {
-    PoolName: string    
-    OpenConnection: unit -> Task<'TConnection>
-    CloseConnection: ('TConnection -> Task) option
-    ConnectionsCount: int    
 }
 ```
 
