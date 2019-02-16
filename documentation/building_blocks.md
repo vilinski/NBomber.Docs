@@ -147,7 +147,7 @@ Scenario.create("Sequantial flow", [authUserStep; buyProductStep])
 
 For this you need to define a few scenarios and register them, that's it.
 ```csharp
-// these scenarios will be run in parallel             
+// C#, these scenarios will be run in parallel             
 var insertScenario = ScenarioBuilder.CreateScenario("insert mongo", insertStep);
 var readScenario = ScenarioBuilder.CreateScenario("read mongo", readStep);
 
@@ -155,7 +155,7 @@ NBomberRunner.RegisterScenarios(insertScenario, readScenario)
              .RunInConsole();
 ```
 ```fsharp
-// these scenarios will be run in parallel             
+// F#, these scenarios will be run in parallel             
 let insertScenario = Scenario.create("insert mongo", [insertStep])
 let readScenario = Scenario.create("read mongo", [readStep])
 
