@@ -1,6 +1,6 @@
 # Building blocks
 
-The whole API is mainly built around 2 building blocks: Step and Scenario.
+The whole API is mainly built around 3 building blocks: Step, Scenario, ConnectionPool. In this page, we will walk through them just to cover basics.
 
 ```fsharp
 // represents single executable Step
@@ -20,6 +20,14 @@ type Scenario = {
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
     WarmUpDuration: TimeSpan // execution time of warm-up before start bombing 
     Duration: TimeSpan       // execution time of Scenario 
+}
+
+// represents pool of connections (Http/WebSockets/SQL)
+type ConnectionPool<'TConnection> = {
+    PoolName: string    
+    OpenConnection: unit -> Task<'TConnection>
+    CloseConnection: ('TConnection -> Task) option
+    ConnectionsCount: int    
 }
 ```
 
@@ -134,3 +142,25 @@ Scenario.create("Sequantial flow", [authUserStep; buyProductStep])
 |> NBomberRunner.registerScenario
 |> NBomberRunner.runInConsole
 ```
+
+> **NBomber allows you to run several different scenarios in parallel.** For example, in one scenario you can insert/send data, in another one you will read/query data. 
+
+For this you need to define a few scenarios and register them, that's it.
+```csharp
+var insertScenario = ScenarioBuilder.CreateScenario("insert mongo", insertStep);
+var readScenario = ScenarioBuilder.CreateScenario("read mongo", readStep);
+
+NBomberRunner.RegisterScenarios(insertScenario, readScenario) // these scenarios will be run in parallel             
+             .RunInConsole();
+```
+```fsharp
+let insertScenario = Scenario.create("insert mongo", [insertStep])
+let readScenario = Scenario.create("read mongo", [readStep])
+
+[insertScenario; readScenario] // these scenarios will be run in parallel
+|> NBomberRunner.registerScenarios
+|> NBomberRunner.runInConsole
+```
+
+
+
