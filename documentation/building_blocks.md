@@ -34,12 +34,13 @@ type Step =
 
 You can think of Step like a function which execution time will be measured:
 ```fsharp
+// it's pseudocode example
 timer.start()
 step.execute()
 timer.stop()
 ```
 
-NBomber provides 2 type of steps:
+NBomber provides 2 types of step:
 - **Action** - You can use it to simulate any possible **Pull/Push request** for testing any system: database, HTTP/WebSockets server, any message broker like RabbitMQ, Kafka, etc.
 - **Pause** - You can use pause to simulate micro-batching update, or just wait a certain period between sequential operations.
 
@@ -76,12 +77,16 @@ let step = Step.createAction("simple step", ConnectionPool.none, fun context -> 
 
 Basically, NBomber is simply running your defined steps in a loop and measure execution time and build statistics on top of it
 ```fsharp
+// it's pseudocode example
 while not stop do
     for step in steps do
         timer.start()
         step.execute()
         timer.stop()
-        executionTime.Add(timer.Elapsed.TotalMilliseconds)
+        executionTimeList.Add(timer.Elapsed.TotalMilliseconds)
+
+let stats = Statistics.apply(executionTimeList)
+Reporting.build(stats)
 ```
 
 ## Scenario
