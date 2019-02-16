@@ -68,7 +68,7 @@ let step = Step.createAction("simple step", ConnectionPool.none, fun context -> 
 ```
 
 ### Scenario
-Scenario is basically a container for steps (you can think of Scenario like a Job of sequential operations). It contains optional TestInit and TestClose steps which you can define to prepare or clean test environment (load/restore database, clear cache, clean folders and etc).
+Scenario is basically a container for steps (you can think of Scenario like a Job of sequential operations). It contains optional TestInit and TestClose functions which you can define to prepare or clean test environment (load/restore database, clear cache, clean folders and etc).
 
 ```fsharp
 // represents Scenario which groups steps and execute them sequentially
@@ -92,8 +92,8 @@ This is how simple Scenario could be defined and runned:
 ```csharp
 // C# example of Scenario with 2 sequential steps
 // creating two sequential steps
-var authUserStep   = Step.CreateAction(...)
-var buyProductStep = Step.CreateAction(...)
+var authUserStep   = Step.CreateAction(...);
+var buyProductStep = Step.CreateAction(...);
 
 var scenario = ScenarioBuilder.CreateScenario("Sequantial flow", authUserStep, buyProductStep)
                               .WithConcurrentCopies(10)
