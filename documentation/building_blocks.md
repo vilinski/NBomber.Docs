@@ -23,8 +23,8 @@ type Scenario = {
 }
 ```
 
-### Step
-Step is a basic element (you can think of Step like a function) which will be executed and measured. 
+## Step
+Step is a basic element of every scenario which will be executed and measured. 
 
 ```fsharp
 type Step =
@@ -32,8 +32,15 @@ type Step =
     | Pause  of TimeSpan   // to model pause in your test flow
 ```    
 
+You can think of Step like a function which execution time will be measured:
+```fsharp
+timer.start()
+step.execute()
+timer.stop()
+```
+
 NBomber provides 2 type of steps:
-- **Action** - You can simulate any possible **Pull requests** for testing database, HTTP server, etc. Also, you will be capable to simulate **Push requests** like waiting on notification from WebSockets or from any message broker like RabbitMQ, Kafka, etc.
+- **Action** - You can use it to simulate any possible **Pull/Push request** for testing any system: database, HTTP/WebSockets server, any message broker like RabbitMQ, Kafka, etc.
 - **Pause** - You can use pause to simulate micro-batching update, or just wait a certain period between sequential operations.
 
 This is how simple step could be defined:
@@ -67,7 +74,17 @@ let step = Step.createAction("simple step", ConnectionPool.none, fun context -> 
 })
 ```
 
-### Scenario
+Basically, NBomber is simply running your defined steps in a loop and measure execution time and build statistics on top of it
+```fsharp
+while not stop do
+    for step in steps do
+        timer.start()
+        step.execute()
+        timer.stop()
+        executionTime.Add(timer.Elapsed.TotalMilliseconds)
+```
+
+## Scenario
 Scenario is basically a container for steps (you can think of Scenario like a Job of sequential operations). It contains optional TestInit and TestClose functions which you can define to prepare or clean test environment (load/restore database, clear cache, clean folders and etc).
 
 ```fsharp
