@@ -13,8 +13,8 @@ type Step =
 // on dedicated System.Threading.Task
 type Scenario = {
     ScenarioName: string
-    TestInit: (unit -> unit) option  // init func will be executed at start of every scenario
-    TestClean: (unit -> unit) option // clean func will be executed at end of every scenario
+    TestInit: (unit -> Task) option  // init func will be executed at start of every scenario
+    TestClean: (unit -> Task) option // clean func will be executed at end of every scenario
     Steps: Step[]                    // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
@@ -33,22 +33,36 @@ type Step =
 ```    
 
 NBomber provides 2 type of steps:
-- **Action** - You can simulate **pull requests** for testing any database, HTTP server and etc. Also, you will be capable to simulate **push requests** like waiting on notification from WebSockets, RabbitMQ, Kafka and etc.
-- **Pause** - You can use pause to simulate micro-batching update, or just wait some time on operation complete.
+- **Action** - You can simulate any possible **Pull requests** for testing database, HTTP server, etc. Also, you will be capable to simulate **Push requests** like waiting on notification from WebSockets or from any message broker like RabbitMQ, Kafka, etc.
+- **Pause** - You can use pause to simulate micro-batching update, or just wait a certain period between sequential operations.
 
 This is how simple step could be defined:
 
 ```csharp
 // C# example of simple step
-var pStep = Step.CreateAction(
-    name: "simple step",
-    pool: ConnectionPool.None,
-    execute: (context) => Task.FromResult(Response.Ok())
-);
+var step = Step.CreateAction(name: "simple step", pool: ConnectionPool.None, execute: async (context) => 
+{
+    // you can do any logic here: go to http, websocket etc        
+    // for example, you can send http request and wait on response
+    var response = await httpClient.SendAsync(request);
+
+    // or query MongoDb and wait on response
+    var data = await mongoCollection.Find(u => u.IsActive == true).ToListAsync();        
+
+    return Response.Ok();
+});
 ``` 
 ```fsharp
-// F# example of simple step
-let reqStep = Step.createAction("simple step", ConnectionPool.none, fun context -> task {
+// F# example of simple pull step
+let step = Step.createAction("simple step", ConnectionPool.none, fun context -> task {
+    
+    // you can do any logic here: go to http, websocket etc    
+    // for example, you can send http request and wait on response
+    let! response = httpClient.SendAsync(request)
+    
+    // or query MongoDb and wait on response
+    let! data = mongoCollection.Find(u => u.IsActive == true).ToListAsync()
+        
     return Response.Ok() 
 })
 ```
@@ -61,8 +75,8 @@ Scenario is basically a container for steps (you can think of Scenario like a Jo
 // on dedicated System.Threading.Task
 type Scenario = {
     ScenarioName: string
-    TestInit: (unit -> unit) option  // init func will be executed at start of every scenario
-    TestClean: (unit -> unit) option // clean func will be executed at end of every scenario
+    TestInit: (unit -> Task) option  // init func will be executed at start of every scenario
+    TestClean: (unit -> Task) option // clean func will be executed at end of every scenario
     Steps: Step[]                    // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
@@ -77,6 +91,10 @@ This is how simple Scenario could be defined and runned:
 
 ```csharp
 // C# example of Scenario with 2 sequential steps
+// creating two sequential steps
+var authUserStep   = Step.CreateAction(...)
+var buyProductStep = Step.CreateAction(...)
+
 var scenario = ScenarioBuilder.CreateScenario("Sequantial flow", authUserStep, buyProductStep)
                               .WithConcurrentCopies(10)
                               .WithDuration(TimeSpan.FromSeconds(20));    
@@ -89,6 +107,10 @@ NBomberRunner.RegisterScenarios(scenario)
 ```
 ```fsharp
 // F# example of Scenario with 2 sequential steps
+// creating two sequential steps
+let authUserStep   = Step.createAction(...)
+let buyProductStep = Step.createAction(...)
+
 Scenario.create("Sequantial flow", [authUserStep; buyProductStep])
 |> Scenario.withConcurrentCopies(10)
 |> Scenario.withDuration(TimeSpan.FromSeconds(20.0))
