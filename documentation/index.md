@@ -9,7 +9,7 @@ PM> Install-Package NBomber
 ### Step 2. Design and run a load test scenario
 ```csharp
 // first, you need to create a step
-var step1 = Step.CreateAction("pull step", ConnectionPool.None, async context =>
+var step1 = Step.CreateAction("simple step", ConnectionPool.None, async context =>
 {
     // you can do any logic here: go to http, websocket etc
     await Task.Delay(TimeSpan.FromSeconds(0.1));
