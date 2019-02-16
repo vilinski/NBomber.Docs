@@ -121,9 +121,6 @@ var scenario = ScenarioBuilder.CreateScenario("Sequantial flow", authUserStep, b
                               .WithConcurrentCopies(10)
                               .WithDuration(TimeSpan.FromSeconds(20));    
 
-// NBomberRunner allows you to register and run several scenarios in parallel
-// for example on Scenario will contain steps to read from a database
-// and another one will contain steps to insert data to the database
 NBomberRunner.RegisterScenarios(scenario)             
              .RunInConsole();
 ```
