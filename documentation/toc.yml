@@ -1,20 +1,21 @@
-- name: Introduction
-  href: index.md
+- name: Introduction  
+  href: introduction.md
 
-- name: Building Blocks
-  href: building_blocks.md
+- name: Basic concepts
+  href: basic_concepts/toc.yml
 
-- name: CSharp API
-  href: csharp/toc.yml
+- name: Advanced concepts
+  href: advanced_concepts/toc.yml
 
-- name: FSharp API
-  href: fsharp/toc.yml
+- name: Extensions
+  href: extensions/toc.yml
+
+- name: Examples
+  href: examples/toc.yml
 
 - name: FAQ
   href: faq.md
 
-- name: Team
-  href: team.md
-
 - name: Licence
-  href: license.md    
+  href: license.md   
+

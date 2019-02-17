@@ -2,15 +2,31 @@
   <img src="https://raw.githubusercontent.com/PragmaticFlow/NBomber/master/assets/nbomber_logo.png" alt="NBomber logo" width="600px"> 
 </p>
 
-Very simple load testing framework for testing Pull/Push-based systems. **You can test any system regardless of protocol and communication model**. In addition, you can run sequential flows to measure how fast one message can go across all system layers(from A => B => C).
+[![Build status](https://ci.appveyor.com/api/projects/status/kko2ro88xry274do?svg=true)](https://ci.appveyor.com/project/PragmaticFlowOrg/nbomber)
+[![NuGet](https://img.shields.io/nuget/v/nbomber.svg)](https://www.nuget.org/packages/nbomber/)
+
+Very simple load testing framework for Pull and Push scenarios. It's 100% written in F# and targeting .NET Core and full .NET Framework.
+
+### How to install
+To install NBomber via NuGet, run this command in NuGet package manager console:
+```code
+PM> Install-Package NBomber
+```
+
+### Documentation
+Documentation is located [here](https://nbomber.com).
+
+### How to run a simple scenario
+![how to run a scenario gif](https://github.com/PragmaticFlow/NBomber/blob/master/assets/howToRunScenario.gif)
 
 ### Features
-- Pull scenario (Request-response)
-- Push scenario (Pub/Sub)
-- Sequential flow
-- Test runner support: [XUnit; NUnit]
-- Cluster support (run scenario from several nodes in parallel)
-- Reporting: [Plain text; HTML]
+- [x] Pull scenario (Request-response)
+- [x] Push scenario (Pub/Sub)
+- [x] Sequential flow
+- [x] Test runner support: [XUnit; NUnit]
+- [x] Cluster support (run scenario from several nodes in parallel)
+- [x] Reporting: [Plain text; HTML; Csv; Md]
+- [x] Statistics sinks: (analyze and monitor performance trends via sinking statistics to any data storage)
 
 ### Supported technologies
 - Supported runtimes: .NET Framework (4.6+), .NET Core (2.0+), Mono, CoreRT
@@ -27,6 +43,9 @@ Very simple load testing framework for testing Pull/Push-based systems. **You ca
 | HTTP | F# | [Test HTTP (https://github.com)](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples/Scenarios/Http.fs) |
 | XUnit integration | F# | [Simple XUnit test](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples.XUnit/Tests.fs) |
 
+### Contributing
+Would you like to help make NBomber even better? We keep a list of issues that are approachable for newcomers under the [good-first-issue](https://github.com/PragmaticFlow/NBomber/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) label.
+
 ## Why another {x} framework for load testing?
 The main reasons are:
  - **To be technology agnostic** as much as possible (**no dependency on any protocol: HTTP, WebSockets, SSE etc**).
@@ -35,24 +54,16 @@ The main reasons are:
  ### What makes it very simple? 
 NBomber is not really a framework but rather a foundation of building blocks which you can use to describe your test scenario, run it and get reports.
 ```csharp
-var httpPool = ConnectionPool.Create("http pool", () => new HttpClient());
-
-var step1 = Step.CreatePull("GET html", httpPool, async context =>
+var step1 = Step.CreateAction("simple step", ConnectionPool.None, async context =>
 {
-    var request = CreateHttpRequest();
-    var response = await context.Connection.SendAsync(request);
-    return response.IsSuccessStatusCode
-        ? Response.Ok()
-        : Response.Fail(response.StatusCode.ToString());
+    // you can do any logic here: go to http, websocket etc
+    // NBomber will measure execution of this lambda function
+    await Task.Delay(TimeSpan.FromSeconds(0.1));    
+    return Response.Ok();
 });
 
-var scenario = ScenarioBuilder.CreateScenario("test github", step1)
-                              .WithConcurrentCopies(10)
-                              .WithDuration(TimeSpan.FromSeconds(20));
+var scenario = ScenarioBuilder.CreateScenario("Hello World from NBomber!", step1);
 
 NBomberRunner.RegisterScenarios(scenario)
              .RunInConsole();
 ```
-
-### Contributing
-Would you like to help make NBomber even better? We keep a list of issues that are approachable for newcomers under the [good-first-issue](https://github.com/PragmaticFlow/NBomber/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) label.

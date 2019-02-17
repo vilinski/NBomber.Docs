@@ -7,7 +7,37 @@ PM> Install-Package NBomber
 ```
 
 ### Step 2. Design and run a load test scenario
+# [F#](#tab/tabid-1)
+```fsharp
+open System
+open System.Threading.Tasks
+open FSharp.Control.Tasks.V2.ContextInsensitive
+open NBomber.Contracts
+open NBomber.FSharp
+
+// first, you need to create a step
+let step1 = Step.createAction("simple step", ConnectionPool.none, fun context -> task {        
+    // you can do any logic here: go to http, websocket etc
+    do! Task.Delay(TimeSpan.FromSeconds(0.1))
+    return Response.Ok() 
+})
+
+// after creating a step you should add it to Scenario
+// and run Scenario via NBomberRunner
+Scenario.create("Hello World from NBomber!", [step1])
+|> Scenario.withConcurrentCopies(10)
+|> Scenario.withDuration(TimeSpan.FromSeconds(5.0))
+|> NBomberRunner.registerScenario
+|> NBomberRunner.runInConsole
+```
+
+# [C#](#tab/tabid-2)
 ```csharp
+using System;
+using System.Threading.Tasks;
+using NBomber.Contracts;
+using NBomber.CSharp;
+
 // first, you need to create a step
 var step1 = Step.CreateAction("simple step", ConnectionPool.None, async context =>
 {
@@ -25,7 +55,7 @@ var scenario = ScenarioBuilder.CreateScenario("Hello World from NBomber!", step1
 NBomberRunner.RegisterScenarios(scenario)
              .RunInConsole();
 ```
-The NBomberRunner.RunInConsole() runs your test scenario and print results to console output.
+***
 
 ### Step 3. View results
 View the results. Here is an example of console output from the above benchmark:

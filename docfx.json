@@ -4,9 +4,8 @@
       "src": [
         {
           "files": [
-            "src/NBomber/NBomber.fsproj"
-          ],
-          "cwd": ".."
+            "src/**.csproj"
+          ]          
         }
       ],
       "dest": "api",
@@ -15,17 +14,43 @@
     }
   ],
   "build": {
-    "content": [
-      {
-        "files": [
-          "api/**.yml",
-          "api/index.md"
-        ]
-      },
+    "content": [      
       {
         "files": [
           "documentation/**.md",
           "documentation/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ]
+      },
+      {
+        "files": [
+          "basic_concepts/**.md",
+          "basic_concepts/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ]
+      },
+      {        
+        "files": [
+          "advanced_concepts/**.md",
+          "advanced_concepts/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ]
+      },
+      {
+        "files": [
+          "extensions/**.md",
+          "extensions/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ]
+      },
+      {
+        "files": [
+          "examples/**.md",
+          "examples/**/toc.yml",
           "toc.yml",
           "*.md"
         ]
@@ -53,7 +78,7 @@
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
     "template": [
-      "default"
+      "default", "templates/material"
     ],
     "postProcessors": [],
     "markdownEngineName": "markdig",
@@ -64,7 +89,7 @@
     
     "globalMetadata": {
       "_appTitle": "NBomber",
-      "_appFooter": "Copyright © 2018 PragmaticFlow" ,
+      "_appFooter": "Copyright © 2019 PragmaticFlow" ,
       "_enableSearch": true     
     }
   }
