@@ -28,7 +28,7 @@ Step is a basic element of every Scenario which will be executed and measured. Y
 ```fsharp
 // it's pseudocode example where we measure step's execution time
 timer.Start()
-step.ExecuteAsync()
+step.Execute()
 timer.Stop()
 ```
 
@@ -39,18 +39,16 @@ Scenario is basically a container for steps. You can think of Scenario like a jo
 // how NBomber will execute scenario's steps
 while not stop do
     for step in scenario.Steps do
-        
         // measure step's execution time
         timer.Start()
         step.Execute()
         timer.Stop()
-        
-        // append the current execution time to executionTimeList
-        executionTimeList.Add(timer.Elapsed.TotalMilliseconds)
+
+        // append the current execution time to latencies list
+        latencies.Add(timer.Elapsed.TotalMilliseconds)
 
 // build statistics
-let stats = Statistics.apply(executionTimeList)
-Reporting.Build(stats)
+latencies |> Statistics.apply |> Report.build |> Report.save
 ```
 
 In order to cover any test Scenario, we first need to create a Step. This is how simple Step could be defined:
