@@ -114,7 +114,32 @@ public sealed class StepContext<TConnection>
 }
 ```
 
-### CorrelationId
+#### Payload
+You can use Payload to model dependently ordered operations like: login() -> openProduct() -> buyProduct() -> logout(). Basically, it gives you a way to propagate result from step1 to step2.
+
+# [F#](#tab/tabid-1)
+```fsharp
+// every step has a way to pass result of operation to the next step in the flow via Response.Ok(result)
+// let's assume we are in step 1 and we want to return the result of 2 + 2 operation
+// to the next step
+return Response.Ok(2 + 2)
+
+// in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
+context.Payload // will contains 4
+```
+
+# [C#](#tab/tabid-2)
+```csharp
+// every step has a way to pass result of operation to the next step in the flow via Response.Ok(result)
+// let's assume we are in step 1 and we want to return the result of 2 + 2 operation
+// to the next step
+return Response.Ok(2 + 2);
+
+// in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
+context.Payload // will contains 4
+```
+
+#### CorrelationId
 Every step has CorrelationId which will be automatically created by NBomber. You can use StepContext.CorrelationId to model scenarios where you need to observe specific message type tagged by your id. All sequential steps [step1; step2; step3] will have the same CorrelationId within one Task.
 
 # [F#](#tab/tabid-1)
