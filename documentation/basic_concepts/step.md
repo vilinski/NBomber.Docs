@@ -91,7 +91,7 @@ var pause_2_sec = Step.CreatePause(TimeSpan.FromSeconds(2));
 
 ## Step context
 
-Every step is running in separated Task<TResponse> and has its own context. It's a very useful component which contains all related step's information. You can use StepContext to model scenarios which has sequential operations like: loginUser -> makeOrder -> logoutUser. NBomber runtime will automatically create a StepContext and attach it to running Step so you don't need to warry about creation you just need know how to work with StepContext.
+Every step is running in separated Task<TResponse> and has its own context. It's a very useful component which contains all related step's context information. NBomber runtime will automatically create a StepContext and attach it to running Step so you don't need to warry about creation you just need know how to work with StepContext.
 
 # [F#](#tab/tabid-1)
 ```fsharp
@@ -111,5 +111,27 @@ public sealed class StepContext<TConnection>
     public CancellationToken CancellationToken { get; }
     public TConnection Connection { get; }
     public object Payload { get; }
+}
+```
+
+### CorrelationId
+Every step has CorrelationId which will be automatically created by NBomber. You can use StepContext.CorrelationId to model scenarios where you need to observe specific message type tagged by your id. All sequential steps [step1; step2; step3] will have the same CorrelationId within one Task.
+
+# [F#](#tab/tabid-1)
+```fsharp
+// the function which NBomber use to create CorrelationId
+let createCorrelationId (scnName: string, concurrentCopies: int) =
+    [|0 .. concurrentCopies - 1|] 
+    |> Array.map(fun i -> sprintf "%s_%i" scnName i)
+```
+
+# [C#](#tab/tabid-2)
+```csharp
+// the function which NBomber use to create CorrelationId
+public string[] CreateCorrelationId(string scnName, int concurrentCopies)
+{
+    Enumerable.Range(0, concurrentCopies - 1)
+        .Select(i => $"{scnName}_{i}")
+        .ToArray();
 }
 ```
