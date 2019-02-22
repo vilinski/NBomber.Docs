@@ -120,8 +120,7 @@ You can use Payload to model dependently ordered operations like: login() -> ope
 # [F#](#tab/tabid-1)
 ```fsharp
 // every step has a way to pass result of operation to the next step in the flow via Response.Ok(result)
-// let's assume we are in step 1 and we want to return the result of 2 + 2 operation
-// to the next step
+// let's assume we are in step 1 and we want to return the result of 2 + 2 operation to the next step
 return Response.Ok(2 + 2)
 
 // in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
@@ -131,8 +130,7 @@ context.Payload // will contains 4
 # [C#](#tab/tabid-2)
 ```csharp
 // every step has a way to pass result of operation to the next step in the flow via Response.Ok(result)
-// let's assume we are in step 1 and we want to return the result of 2 + 2 operation
-// to the next step
+// let's assume we are in step 1 and we want to return the result of 2 + 2 operation to the next step
 return Response.Ok(2 + 2);
 
 // in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
@@ -160,3 +158,9 @@ public string[] CreateCorrelationId(string scnName, int concurrentCopies)
         .ToArray();
 }
 ```
+
+#### Connection
+Connection represents one connection from the connection pool which is attached to the step. You can find more info about ConnectionPool in the following section.
+
+#### CancellationToken
+CancellationToken is a standard mechanics for canceling long-running operations. NBomber relay on it when it stops scenario. The good practice is to design your steps to be cancellable.
