@@ -11,9 +11,11 @@ type Step =
 You can think of Step like a function which execution time will be measured:
 ```fsharp
 // it's pseudocode example where we measure step's execution time
-timer.Start()
-step.ExecuteAsync()
-timer.Stop()
+let start = getCurrentTime()
+execFunc()
+let end = getCurrentTime()
+
+let latency = end - start
 ```
 
 NBomber provides 2 types of step:
