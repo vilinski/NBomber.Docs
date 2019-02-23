@@ -8,7 +8,4 @@
   href: scenario.md
 
 - name: Assertion
-  href: assertion.md  
-
-- name: Build and run tests  
-  href: build_and_run_tests.md
+  href: assertion.md
