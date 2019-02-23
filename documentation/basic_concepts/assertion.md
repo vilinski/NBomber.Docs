@@ -1,4 +1,4 @@
-# Assertions
+# Assertion
 
 NBomber provides a way to specify assertion for concreate step within a scenario.
 
