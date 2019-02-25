@@ -1,6 +1,6 @@
 # Building blocks
 
-The whole API is mainly built around 3 building blocks: Step, Scenario and NBomberRunner. In this page, we just want to present a short definition of basic components and show API usage. In the next pages, you will get a details about all available components and all information about how to model complex load test scenarios. 
+The whole API is mainly built around 3 building blocks: Step, Scenario and NBomberRunner. In this page, we just want to present a short definition of basic components and show API usage. In the next pages, you will find more details about all available components and all information about how to model complex load test scenarios. 
 
 ```fsharp
 // represents single executable Step
@@ -12,9 +12,9 @@ type Step =
 // represents Scenario which a container for steps, assertions
 type Scenario = {
     ScenarioName: string
-    TestInit: (unit -> Task) option  // init func will be executed at start of every scenario
-    TestClean: (unit -> Task) option // clean func will be executed at end of every scenario
-    Steps: Step[]                    // these steps will be executed sequentially, one by one
+    TestInit: (CancellationToken -> Task) option  // init scenario's resources
+    TestClean: (CancellationToken -> Task) option // clean scenario's resources
+    Steps: Step[]            // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
     WarmUpDuration: TimeSpan // execution time of warm-up before start bombing 
@@ -27,31 +27,14 @@ type Scenario = {
 Step is a basic element of every Scenario which will be executed and measured. You can think of Step like a function which execution time will be measured:
 ```fsharp
 // it's pseudocode example where we measure step's execution time
-timer.Start()
-step.Execute()
-timer.Stop()
+let start = getCurrentTime()
+execFunc()
+let finish = getCurrentTime()
+
+let latency = finish - start
 ```
 
-Scenario is basically a container for steps. You can think of Scenario like a job of sequential operations. NBomber is simply running your defined steps in a loop and measure execution time and build statistics on top of it.
-
-```fsharp
-// it's pseudocode example which demonstrates 
-// how NBomber will execute scenario's steps
-while not stop do
-    for step in scenario.Steps do
-        // measure step's execution time
-        timer.Start()
-        step.Execute()
-        timer.Stop()
-
-        // append the current execution time to latencies list
-        latencies.Add(timer.Elapsed.TotalMilliseconds)
-
-// build statistics
-latencies |> Statistics.apply |> Report.build |> Report.save
-```
-
-In order to cover any test Scenario, we first need to create a Step. This is how simple Step could be defined:
+Scenario is basically a container for steps. You can think of Scenario like a job of sequential operations. NBomber is simply running your defined steps in a loop and measure execution time and build statistics on top of it. In order to cover any test Scenario, we first need to create a Step.
 
 # [F#](#tab/tabid-1)
 ```fsharp

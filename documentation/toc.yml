@@ -4,14 +4,14 @@
 - name: Basic concepts
   href: basic_concepts/toc.yml
 
-- name: Advanced concepts
-  href: advanced_concepts/toc.yml
+# - name: Advanced concepts
+#   href: advanced_concepts/toc.yml
 
 - name: Extensions
   href: extensions/toc.yml
 
-- name: Examples
-  href: examples/toc.yml
+#- name: Examples
+#  href: examples/toc.yml
 
 - name: FAQ
   href: faq.md

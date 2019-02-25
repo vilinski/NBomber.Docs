@@ -7,9 +7,9 @@ Scenario is basically a container for steps (you can think of Scenario like a Jo
 // on dedicated System.Threading.Task
 type Scenario = {
     ScenarioName: string
-    TestInit: (unit -> Task) option  // init func will be executed at start of every scenario
-    TestClean: (unit -> Task) option // clean func will be executed at end of every scenario
-    Steps: Step[]                    // these steps will be executed sequentially, one by one
+    TestInit: (CancellationToken -> Task) option  // init scenario's resources
+    TestClean: (CancellationToken -> Task) option // clean scenario's resources
+    Steps: Step[]            // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
     WarmUpDuration: TimeSpan // execution time of warm-up before start bombing 

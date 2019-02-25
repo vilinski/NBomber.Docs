@@ -1,6 +1,6 @@
 # Assertion
 
-NBomber provides a way to specify assertion for concreate step within a scenario.
+NBomber provides a way to specify assertions for concreate Step within Scenario.
 
 # [F#](#tab/tabid-1)
 ```fsharp
@@ -15,8 +15,9 @@ public class Assertion
     public static IAssertion ForStep(string stepName, Func<Statistics, bool> assertion, string label = null);
 }
 ```
+***
 
-#### API usage
+## API Usage
 
 # [F#](#tab/tabid-1)
 ```fsharp
@@ -102,3 +103,4 @@ namespace CSharp.Examples.NUnit
     }
 }
 ```
+***
