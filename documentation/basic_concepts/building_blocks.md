@@ -1,6 +1,6 @@
 # Building blocks
 
-The whole API is mainly built around 3 building blocks: Step, Scenario and NBomberRunner. In this page, we just want to present a short definition of basic components and show API usage. In the next pages, you will find more details about all available components and all information about how to model complex load test scenarios. 
+The whole API is mainly built around 3 building blocks: Step, Scenario and NBomberRunner. In this page, we just want to present a short definition of basic components and show API usage. In the next pages, you will find more details about all available components and all information about how to model complex load test scenarios.
 
 ```fsharp
 // represents single executable Step
@@ -16,9 +16,9 @@ type Scenario = {
     TestClean: (CancellationToken -> Task) option // clean scenario's resources
     Steps: Step[]            // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
-    ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
-    WarmUpDuration: TimeSpan // execution time of warm-up before start bombing 
-    Duration: TimeSpan       // execution time of Scenario 
+    ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel
+    WarmUpDuration: TimeSpan // execution time of warm-up before start bombing
+    Duration: TimeSpan       // execution time of Scenario
 }
 ```
 
@@ -40,35 +40,36 @@ Scenario is basically a container for steps. You can think of Scenario like a jo
 ```fsharp
 // example of simple Pull step
 let pullStep = Step.createAction("pull step", ConnectionPool.none, fun context -> task {
-    
-    // you can do any logic here: go to http, websocket etc    
+
+    // you can do any logic here: go to http, websocket etc
     // for example, you can send http request and wait on response
     let! response = httpClient.SendAsync(request)
-    
-    // or query MongoDb and wait on response
-    let! data = mongoCollection.Find(u => u.IsActive == true).ToListAsync()
 
-    // in case of error, you can return Response.Fail()     
-    return Response.Ok()    
+    // or query MongoDb and wait on response
+    let find = mongoCollection.Find(fun u -> u.IsActive = true)
+    let! data = find.ToListAsync()
+
+    // in case of error, you can return Response.Fail()
+    return Response.Ok()
 })
 ```
 
 # [C#](#tab/tabid-2)
 ```csharp
 // example of simple Pull step
-var pullStep = Step.CreateAction("pull step", ConnectionPool.None, execute: async (context) => 
+var pullStep = Step.CreateAction("pull step", ConnectionPool.None, execute: async (context) =>
 {
-    // you can do any logic here: go to http, websocket etc        
+    // you can do any logic here: go to http, websocket etc
     // for example, you can send http request and wait on response
     var response = await httpClient.SendAsync(request);
 
     // or query MongoDb and wait on response
-    var data = await mongoCollection.Find(u => u.IsActive == true).ToListAsync();        
+    var data = await mongoCollection.Find(u => u.IsActive == true).ToListAsync();
 
     // in case of error, you can return Response.Fail()
     return Response.Ok();
 });
-``` 
+```
 ***
 
 After defining a Step we need to add it to Scenario and then run Scenario via NBomberRunner.
@@ -91,14 +92,14 @@ Scenario.create("Simple scenario", [pullStep])
 // creating a step
 var step = Step.CreateAction(...);
 
-// creating scenario 
+// creating scenario
 var scenario = ScenarioBuilder
     .CreateScenario("Simple scenario", step)
     .WithConcurrentCopies(10)
-    .WithDuration(TimeSpan.FromSeconds(20));    
+    .WithDuration(TimeSpan.FromSeconds(20));
 
 // run scenario via NBomberRunner
-NBomberRunner.RegisterScenarios(scenario)             
+NBomberRunner.RegisterScenarios(scenario)
              .RunInConsole();
 ```
 ***

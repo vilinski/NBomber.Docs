@@ -27,8 +27,8 @@ let latency = finish - start
 # [F#](#tab/tabid-1)
 ```fsharp
 module Step =
-    let createAction (name: string, 
-                      pool: IConnectionPool<'TConnection>, 
+    let createAction (name: string,
+                      pool: IConnectionPool<'TConnection>,
                       execute: StepContext<'TConnection> -> Task<Response>): IStep
 
     let createPause (duration: TimeSpan): IStep
@@ -39,7 +39,7 @@ module Step =
 public class Step
 {
     public static IStep CreateAction<TConnection>(
-        string name, 
+        string name,
         IConnectionPool<TConnection> pool,
         Func<StepContext<TConnection>, Task<Response>> execute);
 
@@ -54,29 +54,30 @@ public class Step
 ```fsharp
 // example of simple Pull step
 let pullStep = Step.createAction("pull step", ConnectionPool.none, fun context -> task {
-    
-    // you can do any logic here: go to http, websocket etc    
+
+    // you can do any logic here: go to http, websocket etc
     // for example, you can send http request and wait on response
     let! response = httpClient.SendAsync(request)
-    
-    // or query MongoDb and wait on response
-    let! data = mongoCollection.Find(u => u.IsActive == true).ToListAsync()
 
-    // in case of error, you can return Response.Fail()     
-    return Response.Ok()    
+    // or query MongoDb and wait on response
+    let find = mongoCollection.Find(fun u -> u.IsActive == true)
+    let! data = find.ToListAsync()
+
+    // in case of error, you can return Response.Fail()
+    return Response.Ok()
 })
 
 // example of simple Push step
 let pushStep = Step.createAction("push step", ConnectionPool.none, fun context -> task {
-        
+
     // you can do any logic here:
-    // for example, you can wait on response from websockets    
+    // for example, you can wait on response from websockets
     let! response = webSocketClient.ReceiveMessageAsync()
-    
+
     // or wait on response from rabbitMQ broker
     let! data = rabbitMQ.ReceiveUpdateAsync()
-        
-    return Response.Ok() 
+
+    return Response.Ok()
 })
 
 // example of Pause step
@@ -86,35 +87,35 @@ let pause_2_sec = Step.createPause(TimeSpan.FromSeconds(2.0))
 # [C#](#tab/tabid-2)
 ```csharp
 // example of simple Pull step
-var pullStep = Step.CreateAction("pull step", ConnectionPool.None, async (context) => 
+var pullStep = Step.CreateAction("pull step", ConnectionPool.None, async (context) =>
 {
-    // you can do any logic here: go to http, websocket etc        
+    // you can do any logic here: go to http, websocket etc
     // for example, you can send http request and wait on response
     var response = await httpClient.SendAsync(request);
 
     // or query MongoDb and wait on response
-    var data = await mongoCollection.Find(u => u.IsActive == true).ToListAsync();        
+    var data = await mongoCollection.Find(u => u.IsActive == true).ToListAsync();
 
     // in case of error, you can return Response.Fail()
     return Response.Ok();
 });
 
 // example of simple Push step
-var pushStep = Step.CreateAction("push step", ConnectionPool.None, async (context) => 
+var pushStep = Step.CreateAction("push step", ConnectionPool.None, async (context) =>
 {
     // you can do any logic here:
-    // for example, you can wait on response from websockets    
+    // for example, you can wait on response from websockets
     var response = await webSocketClient.ReceiveMessageAsync();
-    
+
     // or wait on response from rabbitMQ broker
     var data = await rabbitMQ.ReceiveUpdateAsync();
-        
-    return Response.Ok(); 
+
+    return Response.Ok();
 });
 
 // example of Pause step
 var pause_2_sec = Step.CreatePause(TimeSpan.FromSeconds(2));
-``` 
+```
 ***
 
 ## Step context
@@ -149,14 +150,14 @@ You can use Payload to model dependently ordered operations like: login() -> ope
 # [F#](#tab/tabid-1)
 ```fsharp
 // every step has a way to pass result of operation to the next step
-// let's assume we are in step 1 and we want to return 
+// let's assume we are in step 1 and we want to return
 // the result of 2 + 2 operation to the next step
-let step1 = Step.createAction("step 1", ConnectionPool.none, fun context -> task { 
+let step1 = Step.createAction("step 1", ConnectionPool.none, fun context -> task {
     return Response.Ok(2 + 2)
 })
 
 // in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
-let step2 = Step.createAction("step 2", ConnectionPool.none, fun context -> task { 
+let step2 = Step.createAction("step 2", ConnectionPool.none, fun context -> task {
     printf "%A" context.Payload // will print 4
     return Response.Ok()
 })
@@ -165,17 +166,17 @@ let step2 = Step.createAction("step 2", ConnectionPool.none, fun context -> task
 # [C#](#tab/tabid-2)
 ```csharp
 // every step has a way to pass result of operation to the next step
-// let's assume we are in step 1 and we want to return 
+// let's assume we are in step 1 and we want to return
 // the result of 2 + 2 operation to the next step
-var step1 = Step.CreateAction("step 1", ConnectionPool.None, async (context) => 
+var step1 = Step.CreateAction("step 1", ConnectionPool.None, async (context) =>
 {
     return Response.Ok(2 + 2);
 });
 
 // in step 2 we can take the value of Response.Ok(2 + 2) via context.Payload
-var step2 = Step.CreateAction("step 1", ConnectionPool.None, async (context) => 
+var step2 = Step.CreateAction("step 1", ConnectionPool.None, async (context) =>
 {
-    Console.WriteLine(context.Payload); // will print 4    
+    Console.WriteLine(context.Payload); // will print 4
     return Response.Ok();
 });
 ```
@@ -188,7 +189,7 @@ Every step has CorrelationId which will be automatically created by NBomber. You
 ```fsharp
 // the function which NBomber use to create CorrelationId for every copy of Step
 let createCorrelationId (scnName: string, concurrentCopies: int) =
-    [|0 .. concurrentCopies - 1|] 
+    [|0 .. concurrentCopies - 1|]
     |> Array.map(fun i -> sprintf "%s_%i" scnName i)
 ```
 
@@ -211,16 +212,16 @@ Connection represents one connection from the ConnectionPool which is attached t
 ```fsharp
 // in order to create an one connection per step
 // we need to create a ConnectionPool and then attach it to the Step
-let webSocketsPool = 
+let webSocketsPool =
     ConnectionPool.create(
-        "webSockets pool", 
-        
+        "webSockets pool",
+
         openConnection = fun (token) -> task {
             let ws = ClientWebSocket()
             do! ws.ConnectAsync(Uri("ws://localhost:55555"), token)
             return ws
         },
-        
+
         closeConnection = fun (connection, token) -> task {
             do! connection.CloseAsync(token)
         }
@@ -228,7 +229,7 @@ let webSocketsPool =
 
 // here we attach webSocketsPool to the Step
 // and use context.Connection to get access to dedicated connection
-let step = Step.createAction("step", webSocketsPool, fun context -> task { 
+let step = Step.createAction("step", webSocketsPool, fun context -> task {
     do! context.Connection.SendAsync("ping")
     return Response.Ok()
 })
@@ -239,16 +240,16 @@ let step = Step.createAction("step", webSocketsPool, fun context -> task {
 // in order to create an one connection per step
 // we need to create a ConnectionPool and then attach it to the Step
 var webSocketsPool = ConnectionPool.Create(
-    name: "webSockets pool", 
-    
-    openConnection: async (token) => 
+    name: "webSockets pool",
+
+    openConnection: async (token) =>
     {
         var ws = new ClientWebSocket();
         await ws.ConnectAsync(new Uri("ws://localhost:55555"), token);
         return ws;
     },
-    
-    closeConnection: async (connection, token) => 
+
+    closeConnection: async (connection, token) =>
     {
         return await connection.CloseAsync(WebSocketCloseStatus.NormalClosure, token);
     }
@@ -257,7 +258,7 @@ var webSocketsPool = ConnectionPool.Create(
 // here, we attach webSocketsPool to the Step
 // and use context.Connection to get access to dedicated connection
 var step = Step.CreateAction("step", webSocketsPool, async (context) =>
-{ 
+{
     await context.Connection.SendAsync("ping");
     return Response.Ok();
 })
@@ -269,11 +270,11 @@ CancellationToken is a standard mechanics for canceling long-running operations.
 
 # [F#](#tab/tabid-1)
 ```fsharp
-// in this example, we use CancellationToken 
+// in this example, we use CancellationToken
 // to allow NBomber cancel running Step
 let httpClient = HttpClient()
 
-let step = Step.createAction("step", ConnectionPool.none, fun context -> task { 
+let step = Step.createAction("step", ConnectionPool.none, fun context -> task {
     let! response = httpClient.SendAsync(createHttpRequest(), context.CancellationToken)
     return Response.Ok(response)
 })
@@ -281,12 +282,12 @@ let step = Step.createAction("step", ConnectionPool.none, fun context -> task {
 
 # [C#](#tab/tabid-2)
 ```csharp
-// in this example, we use CancellationToken 
+// in this example, we use CancellationToken
 // to allow NBomber cancel running Step
 var httpClient = new HttpClient();
 
 var step = Step.CreateAction("step", ConnectionPool.None, async (context) =>
-{ 
+{
     var response = await httpClient.SendAsync(createHttpRequest(), context.CancellationToken);
     return Response.Ok(response);
 })
