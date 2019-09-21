@@ -7,8 +7,8 @@ Scenario is basically a container for steps (you can think of Scenario like a Jo
 // on dedicated System.Threading.Task
 type Scenario = {
     ScenarioName: string
-    TestInit: (CancellationToken -> Task) option  // init scenario's resources
-    TestClean: (CancellationToken -> Task) option // clean scenario's resources
+    TestInit: (ScenarioContext -> Task) option  // init scenario's resources
+    TestClean: (ScenarioContext -> Task) option // clean scenario's resources
     Steps: Step[]            // these steps will be executed sequentially, one by one
     Assertions: Assertion[]  // list of assertions defined by user
     ConcurrentCopies: int    // specify how many copies of current Scenario to run in parallel    
@@ -22,22 +22,10 @@ type Scenario = {
 
 This is how simple Scenario could be defined and runned:
 
-# [F#](#tab/tabid-1)
-```fsharp
-let pullStep = Step.createAction(...)
-
-// creating scenario and run it via NBomberRunner
-Scenario.create("Simple scenario", [pullStep])
-|> Scenario.withConcurrentCopies(10)
-|> Scenario.withDuration(TimeSpan.FromSeconds(20.0))
-|> NBomberRunner.registerScenario
-|> NBomberRunner.runInConsole
-```
-
-# [C#](#tab/tabid-2)
+# [C#](#tab/tabid-1)
 ```csharp
 // creating a step
-var step = Step.CreateAction(...);
+var step = Step.Create(...);
 
 // creating scenario 
 var scenario = ScenarioBuilder
@@ -49,24 +37,25 @@ var scenario = ScenarioBuilder
 NBomberRunner.RegisterScenarios(scenario)             
              .RunInConsole();
 ```
+
+# [F#](#tab/tabid-2)
+```fsharp
+let pullStep = Step.create(...)
+
+// creating scenario and run it via NBomberRunner
+Scenario.create "Simple scenario" [pullStep]
+|> Scenario.withConcurrentCopies(10)
+|> Scenario.withDuration(TimeSpan.FromSeconds 20.0)
+|> NBomberRunner.registerScenario
+|> NBomberRunner.runInConsole
+```
 ***
 
 ## Running different scenarios in parallel
 
 **NBomber allows you to register and run several different scenarios in parallel.** For example, in one scenario you can insert/send data, in another one you will read/query data. For this you need to define a few scenarios and register them, that's it.
 
-# [F#](#tab/tabid-1)
-```fsharp
-// these scenarios will be run in parallel             
-let insertScenario = Scenario.create("insert mongo", [insertStep])
-let readScenario = Scenario.create("read mongo", [readStep])
-
-[insertScenario; readScenario]
-|> NBomberRunner.registerScenarios
-|> NBomberRunner.runInConsole
-```
-
-# [C#](#tab/tabid-2)
+# [C#](#tab/tabid-1)
 ```csharp
 // these scenarios will be run in parallel             
 var insertScenario = ScenarioBuilder.CreateScenario("insert mongo", insertStep);
@@ -74,5 +63,16 @@ var readScenario = ScenarioBuilder.CreateScenario("read mongo", readStep);
 
 NBomberRunner.RegisterScenarios(insertScenario, readScenario) 
              .RunInConsole();
+```
+
+# [F#](#tab/tabid-2)
+```fsharp
+// these scenarios will be run in parallel             
+let insertScenario = Scenario.create "insert mongo" [insertStep]
+let readScenario = Scenario.create "read mongo" [readStep]
+
+[insertScenario; readScenario]
+|> NBomberRunner.registerScenarios
+|> NBomberRunner.runInConsole
 ```
 ***

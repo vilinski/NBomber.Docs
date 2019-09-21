@@ -7,7 +7,38 @@ PM> Install-Package NBomber
 ```
 
 ### Step 2. Design and run a load test scenario
-# [F#](#tab/tabid-1)
+# [C#](#tab/tabid-1)
+```csharp
+using System;
+using System.Threading.Tasks;
+using NBomber.Contracts;
+using NBomber.CSharp;
+
+namespace Examples
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {   
+            // first, you need to create a step
+            var step = Step.Create("step", async context =>
+            {
+                // you can do any logic here: go to http, websocket etc
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                return Response.Ok();
+            });
+
+            // after creating a step you should add it to Scenario.
+            var scenario = ScenarioBuilder.CreateScenario("Hello World!", step);
+
+            NBomberRunner.RegisterScenarios(scenario)
+                         .RunInConsole();
+        }
+    }
+}             
+```
+
+# [F#](#tab/tabid-2)
 ```fsharp
 open System
 open System.Threading.Tasks
@@ -15,45 +46,20 @@ open FSharp.Control.Tasks.V2.ContextInsensitive
 open NBomber.Contracts
 open NBomber.FSharp
 
-// first, you need to create a step
-let step1 = Step.createAction("simple step", ConnectionPool.none, fun context -> task {        
-    // you can do any logic here: go to http, websocket etc
-    do! Task.Delay(TimeSpan.FromSeconds(0.1))
-    return Response.Ok() 
-})
+[<EntryPoint>]
+let main argv =
 
-// after creating a step you should add it to Scenario
-// and run Scenario via NBomberRunner
-Scenario.create("Hello World from NBomber!", [step1])
-|> Scenario.withConcurrentCopies(10)
-|> Scenario.withDuration(TimeSpan.FromSeconds(5.0))
-|> NBomberRunner.registerScenario
-|> NBomberRunner.runInConsole
-```
+    // first, you need to create a step
+    let step = Step.create("simple step", fun context -> task {        
+        // you can do any logic here: go to http, websocket etc        
+        do! Task.Delay(TimeSpan.FromSeconds(0.1))
+        return Response.Ok() 
+    })
+        
+    let scenario = Scenario.create "Hello World!" [step]
 
-# [C#](#tab/tabid-2)
-```csharp
-using System;
-using System.Threading.Tasks;
-using NBomber.Contracts;
-using NBomber.CSharp;
-
-// first, you need to create a step
-var step1 = Step.CreateAction("simple step", ConnectionPool.None, async context =>
-{
-    // you can do any logic here: go to http, websocket etc
-    await Task.Delay(TimeSpan.FromSeconds(0.1));
-    return Response.Ok();
-});
-
-// after creating a step you should add it to Scenario.
-var scenario = ScenarioBuilder.CreateScenario("Hello World from NBomber!", step1)
-                .WithConcurrentCopies(10)
-                .WithDuration(TimeSpan.FromSeconds(10));                
-
-// run scenario via NBomberRunner
-NBomberRunner.RegisterScenarios(scenario)
-             .RunInConsole();
+    NBomberRunner.registerScenarios [scenario]
+    |> NBomberRunner.runInConsole
 ```
 ***
 
@@ -73,12 +79,13 @@ In your bin directory, you can find a folder 'results' with *.txt, *.html, *.csv
 
 ### Step 5. Integrate load test in your CI/CD pipline
 If you decided to add load test in your CI/CD pipline NBomber provides an integration with:
-- XUnit
-- NUnit
+- [NUnit](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/CSharp/CSharp.Examples.NUnit/Tests.cs)
+- [XUnit](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples.XUnit/Tests.fs) 
+- [Expecto](https://github.com/PragmaticFlow/NBomber/blob/dev/examples/FSharp/FSharp.Examples.Expecto/Tests.fs) 
 
 ### Step 6. Sink your test results in any data storage to track performance trends
 If you decided to track your performance trends and analyze historical data NBomber provides an integrations with:
-- InfluxDB 
+- [InfluxDB](https://github.com/PragmaticFlow/NBomber.Sinks.InfluxDB/blob/master/examples/NBomber.Sinks.InfluxDB.Examples.CSharp/Program.cs)
 
 ### Next steps
 NBomber provides a lot of features which help to load test any system. If you want to know more about NBomber features, checkout the Overview page. If you have any questions, checkout the FAQ page. If you didn't find answer for your question on this page, ask it on gitter or create an issue.

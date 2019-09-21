@@ -1,7 +1,8 @@
 # NBomber.Http
 
-[![Build status](https://ci.appveyor.com/api/projects/status/svujv1049rtf4nb9?svg=true)](https://ci.appveyor.com/project/PragmaticFlowOrg/nbomber-http)
+[![Build status](https://ci.appveyor.com/api/projects/status/639k1l877whni54c?svg=true)](https://ci.appveyor.com/project/PragmaticFlowOrg/nbomber-http)
 [![NuGet](https://img.shields.io/nuget/v/nbomber.http.svg)](https://www.nuget.org/packages/nbomber.http/)
+[![Gitter](https://badges.gitter.im/nbomber/community.svg)](https://gitter.im/nbomber/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 NBomber plugin for defining HTTP scenarios
 
@@ -11,75 +12,32 @@ To install NBomber.Http via NuGet, run this command in NuGet package manager con
 PM> Install-Package NBomber.Http
 ```
 
+### Documentation
+Documentation is located [here](https://nbomber.com)
+
 ### Contributing
 Would you like to help make NBomber even better? We keep a list of issues that are approachable for newcomers under the [good-first-issue](https://github.com/PragmaticFlow/NBomber.Http/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) label.
 
 ### Examples
-
-# [F#](#tab/tabid-1)
-```fsharp
-open System
-open NBomber.FSharp
-open NBomber.Http.FSharp
-
-let buildScenario () =
-
-    let step =
-        HttpStep.createRequest "GET" "https://www.youtube.com"
-        |> HttpStep.withHeader "Accept" "text/html"
-        |> HttpStep.withHeader "User-Agent" "Mozilla/5.0"                                         
-        |> HttpStep.build "GET request"
-
-        // |> HttpStep.withVersion "2.0"
-        // |> HttpStep.withBody(new StringContent ("""{"some":"jsonvalue"}"""))
-        // |> HttpStep.withBody(new ByteArrayContent("some byte array"B))
-
-    Scenario.create("test youtube.com", [step])
-    |> Scenario.withConcurrentCopies 50
-    |> Scenario.withDuration(TimeSpan.FromSeconds 10.0)
-
-[<EntryPoint>]
-let main argv =
-    buildScenario()
-    |> NBomberRunner.registerScenario
-    |> NBomberRunner.runInConsole
-0
-```
-
-# [C#](#tab/tabid-2)
 ```csharp
-using System;
-using NBomber.Contracts;
-using NBomber.CSharp;
-using NBomber.Http.CSharp;
-
-namespace NBomber.Http.Examples.CSharp
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            var scenario = BuildScenario();
-            NBomberRunner.RegisterScenarios(scenario)
-                         .RunInConsole();
-        }
+	var step = HttpStep.Create("simple step", async (context) => 
+	    Http.CreateRequest("GET", "https://gitter.im")
+	        .WithHeader("Accept", "text/html")
+		.WithHeader("Cookie", "cookie1=value1; cookie2=value2")
+		//.WithBody(new StringContent("{ some JSON }", Encoding.UTF8, "application/json"))
+		//.WithCheck(response => Task.FromResult(response.IsSuccessStatusCode))
+	);
 
-        static Scenario BuildScenario()
-        {
-            var step = HttpStep.CreateRequest("GET", "https://www.youtube.com")                               
-                               .WithHeader("Accept", "text/html")
-                               .WithHeader("User-Agent", "Mozilla/5.0")                               
-                               .BuildStep("GET request");
-                               //.WithVersion("2.0")
-                               //.WithBody(new StringContent("{ some json }"))
-                               //.WithBody(new ByteArrayContent())
+	var scenario = ScenarioBuilder.CreateScenario("test gitter", step)
+				      .WithConcurrentCopies(100)                                          
+				      .WithDuration(TimeSpan.FromSeconds(10));
 
-            return ScenarioBuilder.CreateScenario("test youtube.com", step)
-                .WithConcurrentCopies(50)
-                .WithDuration(TimeSpan.FromSeconds(10));                
-        }
+	NBomberRunner.RegisterScenarios(scenario)
+		     .RunInConsole();
     }
 }
-
 ```
-***
